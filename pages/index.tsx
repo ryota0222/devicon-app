@@ -9,13 +9,21 @@ import { useFieldExtension } from "microcms-field-extension-react";
 
 const iconKeys = iconNames.map((icon) => Object.keys(icon)[0]);
 
+interface SendMessageData {
+  name: string;
+  icon: string;
+}
+
 export default function IndexPage() {
   const [keyword, setKeyword] = useState("");
   const [selectedKey, setSelectedKey] = useState<string>("");
-  const { data, sendMessage } = useFieldExtension("", {
-    origin: "https://lazurate-blog.microcms.io",
-    height: 300,
-  });
+  const { data, sendMessage } = useFieldExtension<SendMessageData | null>(
+    null,
+    {
+      origin: "https://lazurate-blog.microcms.io",
+      height: 300,
+    }
+  );
   const getIconPath = useCallback((key: keyof typeof iconNames) => {
     // eslint-disable-next-line
     const iconObj = iconNames.find(
@@ -53,10 +61,10 @@ export default function IndexPage() {
         id: "skill",
         title: key,
         imageUrl: iconPath,
-        data: JSON.stringify({
+        data: {
           name: key,
           icon: iconPath,
-        }),
+        },
       });
     },
     [sendMessage, getIconPath]
