@@ -12,7 +12,7 @@ export default function DefaultLayout({
       <Head />
       <Navbar />
       <main
-        className="container max-w-7xl px-6 flex-grow"
+        className="container max-w-7xl px-6 flex-grow w-full"
         style={{ margin: "auto" }}
       >
         {children}

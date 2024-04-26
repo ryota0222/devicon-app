@@ -22,6 +22,11 @@ export default function IndexPage() {
     {
       origin: "https://lazurate-blog.microcms.io",
       height: 300,
+      onPostSuccess: (message) => {
+        if (message.data.message.title) {
+          setSelectedKey(message.data.message.title);
+        }
+      },
     }
   );
   const getIconPath = useCallback((key: keyof typeof iconNames) => {
@@ -55,12 +60,13 @@ export default function IndexPage() {
   }, []);
   const handleClickIcon = useCallback(
     (key: string) => {
-      setSelectedKey(key);
+      if (process.env.NODE_ENV === "development") {
+        setSelectedKey(key);
+      }
       const iconPath = getIconPath(key as keyof typeof iconNames);
       sendMessage({
         id: "skill",
         title: key,
-        // imageUrl: iconPath,
         data: {
           name: key,
           icon: iconPath,
@@ -82,6 +88,24 @@ export default function IndexPage() {
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
         <div className="pb-16 w-full">
+          {selectedKey && (
+            <div
+              className="p-4 border-b border-slate-400 flex gap-4 items-center justify-center"
+              style={{ marginBottom: "2rem" }}
+            >
+              <p className="text-sm">選択中のスキル</p>
+              <div className="flex gap-4 items-center">
+                <Image
+                  src={getIconPath(selectedKey as keyof typeof iconNames)}
+                  width={40}
+                  height={40}
+                  radius="none"
+                  alt={selectedKey}
+                />
+                <p className="text-lg font-bold">{selectedKey}</p>
+              </div>
+            </div>
+          )}
           <Input
             aria-label="Search"
             classNames={{
@@ -98,33 +122,44 @@ export default function IndexPage() {
             onChange={(e) => setKeyword(e.target.value)}
           />
         </div>
-        <div className="grid grid-cols-4 gap-8">
-          {filteredIconNameList.map((icon) => {
-            return (
-              <div key={icon} className="mr-2 flex flex-col items-center gap-1">
-                <Card
-                  isHoverable
-                  isPressable
-                  disableRipple
-                  className={clsx(
-                    "w-16 h-16 flex justify-center items-center",
-                    selectedKey.includes(icon) && "border-2 border-cyan-500"
-                  )}
-                  onClick={() => handleClickIcon(icon)}
-                >
-                  <Image
-                    src={getIconPath(icon as keyof typeof iconNames)}
-                    width={32}
-                    height={32}
-                    radius="none"
-                    alt={icon}
-                  />
-                </Card>
-                <span className="text-sm">{icon}</span>
-              </div>
-            );
-          })}
-        </div>
+        <>
+          {keyword.length > 0 && filteredIconNameList.length === 0 ? (
+            <div className="">
+              <p className="text-sm text-center">検索結果がありません</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-8">
+              {filteredIconNameList.map((icon) => {
+                return (
+                  <div
+                    key={icon}
+                    className="mr-2 flex flex-col items-center gap-1"
+                  >
+                    <Card
+                      isHoverable
+                      isPressable
+                      disableRipple
+                      className={clsx(
+                        "w-16 h-16 flex justify-center items-center",
+                        selectedKey.includes(icon) && "border-2 border-cyan-500"
+                      )}
+                      onClick={() => handleClickIcon(icon)}
+                    >
+                      <Image
+                        src={getIconPath(icon as keyof typeof iconNames)}
+                        width={32}
+                        height={32}
+                        radius="none"
+                        alt={icon}
+                      />
+                    </Card>
+                    <span className="text-sm">{icon}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       </section>
     </DefaultLayout>
   );
