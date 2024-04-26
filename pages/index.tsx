@@ -4,7 +4,7 @@ import DefaultLayout from "@/layouts/default";
 import { Card, Image, Input } from "@nextui-org/react";
 import clsx from "clsx";
 import "devicon";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFieldExtension } from "microcms-field-extension-react";
 
 const iconKeys = iconNames.map((icon) => Object.keys(icon)[0]);
@@ -73,6 +73,11 @@ export default function IndexPage() {
     if (keyword === "") return iconKeys;
     return iconKeys.filter((element) => element.includes(keyword));
   }, [keyword]);
+  useEffect(() => {
+    if (data?.name) {
+      setSelectedKey(data.name);
+    }
+  }, [data]);
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
