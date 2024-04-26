@@ -60,7 +60,7 @@ export default function IndexPage() {
       sendMessage({
         id: "skill",
         title: key,
-        imageUrl: iconPath,
+        // imageUrl: iconPath,
         data: {
           name: key,
           icon: iconPath,
