@@ -16,15 +16,15 @@ interface SendMessageData {
 
 export default function IndexPage() {
   const [keyword, setKeyword] = useState("");
-  const [selectedKey, setSelectedKey] = useState<string>("");
-  const { data, sendMessage } = useFieldExtension<SendMessageData | null>(
+  const [selectedKeyList, setSelectedKeyList] = useState<string[]>([]);
+  const { data, sendMessage } = useFieldExtension<SendMessageData[] | null>(
     null,
     {
       origin: "https://lazurate-blog.microcms.io",
       height: 300,
       onPostSuccess: (message) => {
         if (message.data.message.title) {
-          setSelectedKey(message.data.message.title);
+          // setSelectedKeyList([]);
         }
       },
     }
@@ -60,49 +60,74 @@ export default function IndexPage() {
   }, []);
   const handleClickIcon = useCallback(
     (key: string) => {
-      if (process.env.NODE_ENV === "development") {
-        setSelectedKey(key);
+      let list = [...selectedKeyList];
+      if (selectedKeyList.includes(key)) {
+        list = selectedKeyList.filter((item) => item !== key);
+      } else {
+        list = [...selectedKeyList, key];
       }
-      const iconPath = getIconPath(key as keyof typeof iconNames);
-      sendMessage({
-        id: "skill",
-        title: key,
-        data: {
-          name: key,
-          icon: iconPath,
-        },
-      });
+      if (process.env.NODE_ENV === "development") {
+        setSelectedKeyList(list);
+      } else {
+        const data = list.map((item) => {
+          const iconPath = getIconPath(item as keyof typeof iconNames);
+          return {
+            name: item,
+            icon: iconPath,
+          };
+        });
+        const title = list.join(", ");
+        sendMessage({
+          id: "skills",
+          title,
+          data,
+        });
+      }
     },
-    [sendMessage, getIconPath]
+    [sendMessage, getIconPath, selectedKeyList]
   );
   const filteredIconNameList = useMemo(() => {
     if (keyword === "") return iconKeys;
     return iconKeys.filter((element) => element.includes(keyword));
   }, [keyword]);
   useEffect(() => {
-    if (data?.name) {
-      setSelectedKey(data.name);
+    if (data) {
+      setSelectedKeyList(data.map((item) => item.name));
     }
   }, [data]);
   return (
     <DefaultLayout>
       <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
         <div className="pb-16 w-full">
-          {selectedKey && (
+          {selectedKeyList.length > 0 && (
             <div
-              className="p-4 border-b border-slate-400 flex gap-4 items-center justify-center"
+              className="p-4 border-b border-slate-400 flex gap-4 items-center justify-center flex-col"
               style={{ marginBottom: "2rem" }}
             >
               <p className="text-sm">選択中のスキル</p>
-              <div className="flex gap-4 items-center">
-                <Image
-                  src={getIconPath(selectedKey as keyof typeof iconNames)}
-                  width={40}
-                  height={40}
-                  radius="none"
-                  alt={selectedKey}
-                />
-                <p className="text-lg font-bold">{selectedKey}</p>
+              <div className="flex flex-wrap">
+                {selectedKeyList.map((selectedKey) => (
+                  <div
+                    key={selectedKey}
+                    className="mr-2 flex flex-col items-center gap-1"
+                  >
+                    <Card
+                      disableRipple
+                      className={clsx(
+                        "w-16 h-16 flex justify-center items-center"
+                      )}
+                    >
+                      <Image
+                        src={getIconPath(selectedKey as keyof typeof iconNames)}
+                        width={32}
+                        height={32}
+                        radius="none"
+                        alt={selectedKey}
+                      />
+                    </Card>
+                    <span className="text-sm">{selectedKey}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -141,7 +166,8 @@ export default function IndexPage() {
                       disableRipple
                       className={clsx(
                         "w-16 h-16 flex justify-center items-center",
-                        selectedKey.includes(icon) && "border-2 border-cyan-500"
+                        selectedKeyList.includes(icon) &&
+                          "border-2 border-cyan-500"
                       )}
                       onClick={() => handleClickIcon(icon)}
                     >
