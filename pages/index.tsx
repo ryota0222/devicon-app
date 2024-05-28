@@ -24,7 +24,7 @@ export default function IndexPage() {
       height: 300,
       onPostSuccess: (message) => {
         if (message.data.message.title) {
-          // setSelectedKeyList([]);
+          setSelectedKeyList(message.data.message.title.split(", "));
         }
       },
     }
